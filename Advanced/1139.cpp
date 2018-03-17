@@ -97,50 +97,51 @@ int main()
 
 
 /************************************************************************************************************
-https://www.liuchuo.net/archives/4210
 
-bool arr[10000][10000];                 //存储所有有朋友关系的
-struct node
+int Graph[10000][10000];
+int gender[10000];                       //0 - boy, 1 - girl
+
+int main()
 {
-	int a, b;
-};
-bool cmp(node x, node y) {
-	return x.a != y.a ? x.a < y.a : x.b < y.b;
-}
-int main() {
-	int n, m, k;
-	scanf("%d%d", &n, &m);
-	vector<int> v[10000];               //v[i]存储i的所有同性朋友
-	for (int i = 0; i < m; i++)
+	int N, M, K;
+	scanf("%d %d", &N, &M);
+	vector<int> friends[10000];
+	for (int i = 0; i < M; ++i)
 	{
-		string a, b;
-		cin >> a >> b;
-		if (a.length() == b.length())   //利用长度来区分性别，女生有'-'因此长度是5，男生没有'-'因此长度是4
+		char id1[6], id2[6];
+		scanf("%s %s", id1, id2);
+		string v(id1), w(id2);
+		int V = abs(stoi(v)), W = abs(stoi(w));
+		gender[V] = v.size() == 5;       //长度为5说明有'-'，即女生
+		gender[W] = w.size() == 5;
+		Graph[V][W] = Graph[W][V] = 1;
+		if (v.size() == w.size())        //friends存储同性的朋友
 		{
-			v[abs(stoi(a))].push_back(abs(stoi(b)));
-			v[abs(stoi(b))].push_back(abs(stoi(a)));
+			friends[V].push_back(W);
+			friends[W].push_back(V);
 		}
-		arr[abs(stoi(a))][abs(stoi(b))] = arr[abs(stoi(b))][abs(stoi(a))] = true;
 	}
-	scanf("%d", &k);
-	for (int i = 0; i < k; i++)
+	scanf("%d", &K);
+	for (int i = 0; i < K; ++i)
 	{
-		int c, d;
-		cin >> c >> d;
-		vector<node> ans;
-		for (int j = 0; j < v[abs(c)].size(); j++)        //直接遍历判断：c的同性友人v[abs(c)][j]和d的同性友人v[abs(d)][k]是否是朋友
+		int V, W;
+		scanf("%d %d", &V, &W);
+		V = abs(V);
+		W = abs(W);
+		vector<pair<int, int>> ret;
+		for (int m = 0; m < friends[V].size(); ++m)
 		{
-			for (int k = 0; k < v[abs(d)].size(); k++)
+			for (int n = 0; n < friends[W].size(); ++n)
 			{
-				if (v[abs(c)][j] == abs(d) || abs(c) == v[abs(d)][k]) continue;   //跳过正好三个朋友相连的情况
-				if (arr[v[abs(c)][j]][v[abs(d)][k]] == true)                      //若正好构成符合性别要求的4人串，则加入结果
-					ans.push_back(node{ v[abs(c)][j], v[abs(d)][k] });
+				if (Graph[friends[V][m]][friends[W][n]] == 1 &&           //两人的朋友也是朋友
+					friends[V][m] != W && friends[W][n] != V)             //且不是两人直接是朋友这种情况
+					ret.push_back({ friends[V][m],friends[W][n] });
 			}
 		}
-		sort(ans.begin(), ans.end(), cmp);
-		printf("%d\n", int(ans.size()));
-		for (int j = 0; j < ans.size(); j++)
-			printf("%04d %04d\n", ans[j].a, ans[j].b);
+		sort(ret.begin(), ret.end());
+		printf("%d\n", ret.size());
+		for (int i = 0; i < ret.size(); ++i)
+			printf("%04d %04d\n", ret[i].first, ret[i].second);
 	}
 	return 0;
 }
